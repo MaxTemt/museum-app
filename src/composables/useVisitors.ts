@@ -1,48 +1,87 @@
 import { ref, computed } from 'vue'
 import type { Visitor } from '../types'
+
+const STORAGE_KEY = 'museum_visitors'
+
+const initialVisitors: Visitor[] = [
+  {
+    id: '1',
+    name: 'Иван Иванов',
+    email: 'ivan@example.com',
+    visitDate: new Date().toISOString().split('T')[0],
+    visitTime: '10:00',
+    status: 'active'
+  },
+  {
+    id: '2',
+    name: 'Мария Петрова',
+    email: 'maria@example.com',
+    visitDate: new Date().toISOString().split('T')[0],
+    visitTime: '12:00',
+    status: 'active'
+  }
+]
+
 const visitors = ref<Visitor[]>([])
 const isLoading = ref(false)
-const API_URL = 'http://localhost:3000/api/visitors'
+
 export function useVisitors() {
+  const loadFromStorage = () => {
+    const data = localStorage.getItem(STORAGE_KEY)
+    if (data) {
+      visitors.value = JSON.parse(data)
+    } else {
+      visitors.value = initialVisitors
+      saveToStorage()
+    }
+  }
+
+  const saveToStorage = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(visitors.value))
+  }
+
   const fetchVisitors = async () => {
     isLoading.value = true
     try {
-      const res = await fetch(API_URL)
-      visitors.value = await res.json()
+      loadFromStorage()
     } finally {
       isLoading.value = false
     }
   }
+
   const addVisitor = async (visitor: Omit<Visitor, 'id' | 'status'>) => {
     isLoading.value = true
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(visitor)
-      })
-      const newVisitor = await res.json()
+      const newVisitor: Visitor = {
+        ...visitor,
+        id: Date.now().toString(),
+        status: 'active'
+      }
       visitors.value.push(newVisitor)
+      saveToStorage()
     } finally {
       isLoading.value = false
     }
   }
+
   const cancelTicket = async (id: string) => {
     isLoading.value = true
     try {
-      await fetch(`${API_URL}/${id}/cancel`, { method: 'PATCH' })
       const index = visitors.value.findIndex(v => v.id === id)
       if (index !== -1) {
         visitors.value[index].status = 'cancelled'
+        saveToStorage()
       }
     } finally {
       isLoading.value = false
     }
   }
+
   const activeVisitorsToday = computed(() => {
     const today = new Date().toISOString().split('T')[0]
     return visitors.value.filter(v => v.visitDate === today && v.status === 'active').length
   })
+
   return {
     visitors,
     isLoading,

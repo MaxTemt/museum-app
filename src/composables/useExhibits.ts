@@ -1,84 +1,101 @@
-// Импорт функций реактивности для Composition API
 import { ref, computed } from 'vue'
-// Импорт TypeScript-интерфейса Экспоната
 import type { Exhibit } from '../types'
-// Глобальные реактивные переменные состояния
+
+const STORAGE_KEY = 'museum_exhibits'
+
+const initialExhibits: Exhibit[] = [
+  {
+    id: '1',
+    name: 'Золотая маска Тутанхамона',
+    description: 'Погребальная маска фараона Тутанхамона, один из самых известных символов Древнего Египта.',
+    category: 'Археология',
+    year: '1323 до н.э.',
+    image: 'https://images.unsplash.com/photo-1599118580792-790fb0482015?w=800'
+  },
+  {
+    id: '2',
+    name: 'Венера Милосская',
+    description: 'Древнегреческая скульптура, созданная приблизительно между 130 и 100 годами до н. э.',
+    category: 'Скульптура',
+    year: '100 до н.э.',
+    image: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=800'
+  }
+]
+
 const exhibits = ref<Exhibit[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
-const API_URL = 'http://localhost:3000/api/exhibits'
 
-// Основная функция-композиция для управления экспонатами (паттерн Store)
 export function useExhibits() {
-  // Асинхронная загрузка списка экспонатов с сервера
+  const loadFromStorage = () => {
+    const data = localStorage.getItem(STORAGE_KEY)
+    if (data) {
+      exhibits.value = JSON.parse(data)
+    } else {
+      exhibits.value = initialExhibits
+      saveToStorage()
+    }
+  }
+
+  const saveToStorage = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(exhibits.value))
+  }
+
   const fetchExhibits = async () => {
     isLoading.value = true
-    error.value = null
     try {
-      const res = await fetch(API_URL)
-      exhibits.value = await res.json()
+      loadFromStorage()
     } catch (e) {
       error.value = 'Ошибка загрузки экспонатов'
     } finally {
       isLoading.value = false
     }
   }
+
   const getExhibitById = async (id: string): Promise<Exhibit | undefined> => {
-    try {
-      const res = await fetch(`${API_URL}/${id}`)
-      if (res.ok) return await res.json()
-    } catch (e) {
-      console.error(e)
-    }
-    return undefined
+    loadFromStorage()
+    return exhibits.value.find(e => e.id === id)
   }
-  // Добавление нового экспоната в базу данных
+
   const addExhibit = async (exhibit: Omit<Exhibit, 'id'>) => {
     isLoading.value = true
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(exhibit)
-      })
-      const newExhibit = await res.json()
+      const newExhibit = {
+        ...exhibit,
+        id: Date.now().toString()
+      }
       exhibits.value.push(newExhibit)
+      saveToStorage()
     } finally {
       isLoading.value = false
     }
   }
-  // Изменение данных существующего экспоната
+
   const updateExhibit = async (id: string, updatedData: Partial<Exhibit>) => {
     isLoading.value = true
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData)
-      })
-      const data = await res.json()
       const index = exhibits.value.findIndex(e => e.id === id)
       if (index !== -1) {
-        exhibits.value[index] = data
+        exhibits.value[index] = { ...exhibits.value[index], ...updatedData }
+        saveToStorage()
       }
     } finally {
       isLoading.value = false
     }
   }
-  // Удаление экспоната
+
   const deleteExhibit = async (id: string) => {
     isLoading.value = true
     try {
-      await fetch(`${API_URL}/${id}`, { method: 'DELETE' })
       exhibits.value = exhibits.value.filter(e => e.id !== id)
+      saveToStorage()
     } finally {
       isLoading.value = false
     }
   }
-  // Вычисляемое свойство - общее количество экспонатов
+
   const totalExhibits = computed(() => exhibits.value.length)
-  
-  // Возврат методов и переменных для использования в компонентах
+
   return {
     exhibits,
     isLoading,
