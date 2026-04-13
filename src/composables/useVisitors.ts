@@ -22,6 +22,7 @@ const initialVisitors: Visitor[] = [
 
 const visitors = ref<Visitor[]>([])
 const isLoading = ref(false)
+const error = ref<string | null>(null)
 
 export function useVisitors() {
   const loadFromStorage = () => {
@@ -83,6 +84,7 @@ export function useVisitors() {
   return {
     visitors,
     isLoading,
+    error,
     fetchVisitors,
     addVisitor,
     cancelTicket,

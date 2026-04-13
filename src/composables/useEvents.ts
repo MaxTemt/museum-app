@@ -24,6 +24,7 @@ const initialEvents: Event[] = [
 
 const events = ref<Event[]>([])
 const isLoading = ref(false)
+const error = ref<string | null>(null)
 
 export function useEvents() {
   const loadFromStorage = () => {
@@ -94,6 +95,7 @@ export function useEvents() {
   return {
     events,
     isLoading,
+    error,
     addEvent,
     fetchEvents,
     updateEvent,

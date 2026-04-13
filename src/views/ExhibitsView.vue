@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Главное представление (страница) раздела Экспонатов
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useExhibits } from '../composables/useExhibits'
@@ -7,27 +6,30 @@ import BaseButton from '../components/BaseButton.vue'
 import BaseTable from '../components/BaseTable.vue'
 import BaseModal from '../components/BaseModal.vue'
 import ExhibitForm from '../components/ExhibitForm.vue'
+import PageHeader from '../components/PageHeader.vue'
+import LoadingIndicator from '../components/LoadingIndicator.vue'
+import ErrorMessage from '../components/ErrorMessage.vue'
+
 const router = useRouter()
-// Подключение глобального состояния (store) через Composition API
-const { exhibits, fetchExhibits, addExhibit, deleteExhibit, isLoading } = useExhibits()
-// Автоматический запрос списка элементов при монтировании компонента на экран
+const { exhibits, fetchExhibits, addExhibit, deleteExhibit, isLoading, error } = useExhibits()
+
 onMounted(() => {
   fetchExhibits()
 })
-// Реактивные переменные для работы с интерфейсом клиентской сортировки и поиска
+
 const searchQuery = ref('')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 const isModalOpen = ref(false)
+
 const columns = [
   { key: 'name', label: 'Название' },
   { key: 'category', label: 'Категория' },
   { key: 'era', label: 'Эпоха' },
   { key: 'acquisitionYear', label: 'Год пост.' }
 ]
-// Вычисляемое свойство: список данных, пропущенный через фильтр и сортировку
+
 const filteredExhibits = computed(() => {
   let result = exhibits.value
-  // Логика текстового поиска без учета регистра
   if (searchQuery.value) {
     result = result.filter(e => 
       e.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -40,22 +42,27 @@ const filteredExhibits = computed(() => {
   })
   return result
 })
+
 const handleAddSubmit = async (data: any) => {
   await addExhibit(data)
   isModalOpen.value = false
 }
+
 const handleDelete = async (id: string) => {
   if (confirm('Вы уверены, что хотите удалить этот экспонат?')) {
     await deleteExhibit(id)
   }
 }
 </script>
+
 <template>
   <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Фонд экспонатов</h1>
-      <BaseButton @click="isModalOpen = true">+ Добавить экспонат</BaseButton>
-    </div>
+    <PageHeader title="Фонд экспонатов">
+      <template #actions>
+        <BaseButton @click="isModalOpen = true">+ Добавить экспонат</BaseButton>
+      </template>
+    </PageHeader>
+
     <div class="bg-white p-4 rounded-lg shadow mb-6 flex gap-4 items-center">
       <div class="flex-1">
         <input 
@@ -72,22 +79,25 @@ const handleDelete = async (id: string) => {
         </select>
       </div>
     </div>
-    <div v-if="isLoading" class="text-center py-10 text-xl">Загрузка данных...</div>
+
+    <ErrorMessage v-if="error" :message="error" />
+    <LoadingIndicator v-if="isLoading">Обновление фондов...</LoadingIndicator>
+
     <BaseTable v-else :columns="columns" :data="filteredExhibits">
       <template #actions="{ row }">
         <div class="flex gap-2 justify-end">
-          <button @click="router.push(`/exhibits/${row.id}`)" class="text-indigo-600 hover:text-indigo-900">Просмотр</button>
-          <button @click="handleDelete(row.id)" class="text-red-600 hover:text-red-900">Удалить</button>
+          <button @click="router.push(`/exhibits/${row.id}`)" class="text-indigo-600 hover:text-indigo-900 font-medium">Просмотр</button>
+          <button @click="handleDelete(row.id)" class="text-red-600 hover:text-red-900 font-medium">Удалить</button>
         </div>
       </template>
     </BaseTable>
+
     <BaseModal 
       :show="isModalOpen" 
       title="Новый экспонат" 
       @close="isModalOpen = false"
     >
       <ExhibitForm @submit="handleAddSubmit" @cancel="isModalOpen = false" />
-      <template #footer><span></span></template> 
     </BaseModal>
   </div>
 </template>
