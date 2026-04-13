@@ -7,17 +7,15 @@ const initialVisitors: Visitor[] = [
   {
     id: '1',
     name: 'Иван Иванов',
-    email: 'ivan@example.com',
     visitDate: new Date().toISOString().split('T')[0],
-    visitTime: '10:00',
+    ticketType: 'standard',
     status: 'active'
   },
   {
     id: '2',
     name: 'Мария Петрова',
-    email: 'maria@example.com',
     visitDate: new Date().toISOString().split('T')[0],
-    visitTime: '12:00',
+    ticketType: 'vip',
     status: 'active'
   }
 ]

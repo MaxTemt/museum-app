@@ -9,16 +9,18 @@ const initialExhibits: Exhibit[] = [
     name: 'Золотая маска Тутанхамона',
     description: 'Погребальная маска фараона Тутанхамона, один из самых известных символов Древнего Египта.',
     category: 'Археология',
-    year: '1323 до н.э.',
-    image: 'https://images.unsplash.com/photo-1599118580792-790fb0482015?w=800'
+    era: '1323 до н.э.',
+    acquisitionYear: 1922,
+    imageUrl: 'https://images.unsplash.com/photo-1599118580792-790fb0482015?w=800'
   },
   {
     id: '2',
     name: 'Венера Милосская',
     description: 'Древнегреческая скульптура, созданная приблизительно между 130 и 100 годами до н. э.',
     category: 'Скульптура',
-    year: '100 до н.э.',
-    image: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=800'
+    era: '100 до н.э.',
+    acquisitionYear: 1820,
+    imageUrl: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=800'
   }
 ]
 

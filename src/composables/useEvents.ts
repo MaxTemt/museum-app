@@ -6,21 +6,19 @@ const STORAGE_KEY = 'museum_events'
 const initialEvents: Event[] = [
   {
     id: '1',
-    title: 'Выставка египетских мумий',
+    name: 'Выставка египетских мумий',
     description: 'Уникальная возможность увидеть артефакты древней цивилизации.',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '2026-12-31',
-    location: 'Зал А',
-    status: 'active'
+    location: 'Зал А'
   },
   {
     id: '2',
-    title: 'Лекция по истории искусств',
+    name: 'Лекция по истории искусств',
     description: 'Вступление в основы ренессанса.',
     startDate: '2026-05-01',
     endDate: '2026-05-02',
-    location: 'Аудитория 101',
-    status: 'planned'
+    location: 'Аудитория 101'
   }
 ]
 
