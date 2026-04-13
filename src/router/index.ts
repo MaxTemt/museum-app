@@ -1,8 +1,7 @@
-// Настройка маршрутизатора для навигации между страницами (SPA)
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 const router = createRouter({
-  // Использование истории браузера (HTML5 History API)
-  history: createWebHistory(import.meta.env.BASE_URL),
+  // Использование хэш-истории (Hash Mode) для совместимости с GitHub Pages (предотвращает 404 при перезагрузке)
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   // Определение доступных маршрутов
   routes: [
     {
