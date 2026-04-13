@@ -6,34 +6,54 @@ const router = createRouter({
   // Определение доступных маршрутов
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue')
+    },
+    {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue')
+      component: () => import('../views/HomeView.vue'),
+      meta: { requiresAuth: true }
     },
     {
-      // Маршрут к странице со списком экспонатов
       path: '/exhibits',
       name: 'exhibits',
-      component: () => import('../views/ExhibitsView.vue')
+      component: () => import('../views/ExhibitsView.vue'),
+      meta: { requiresAuth: true }
     },
     {
-      // Динамический маршрут для детального просмотра экспоната по ID
       path: '/exhibits/:id',
       name: 'exhibit-detail',
       component: () => import('../views/ExhibitDetailView.vue'),
-      // Разрешение передачи параметров как пропсов (props)
-      props: true
+      props: true,
+      meta: { requiresAuth: true }
     },
     {
       path: '/visitors',
       name: 'visitors',
-      component: () => import('../views/VisitorsView.vue')
+      component: () => import('../views/VisitorsView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/events',
       name: 'events',
-      component: () => import('../views/EventsView.vue')
+      component: () => import('../views/EventsView.vue'),
+      meta: { requiresAuth: true }
     }
   ]
+})
+
+// Навигационный гард для защиты маршрутов
+router.beforeEach((to, _from, next) => {
+  const isAuthenticated = !!localStorage.getItem('museum_auth_user')
+  
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login')
+  } else if (to.path === '/login' && isAuthenticated) {
+    next('/')
+  } else {
+    next()
+  }
 })
 export default router
